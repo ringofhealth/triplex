@@ -29,16 +29,23 @@ if Code.ensure_loaded?(Plug) do
     end
 
     defp get_subdomain(
-           %Conn{host: host},
-           %SubdomainPlugConfig{endpoint: endpoint}
-         ) do
+      %Conn{host: host},
+      %SubdomainPlugConfig{endpoint: endpoint}
+    ) do
       root_host = endpoint.config(:url)[:host]
-
+    
       if host in [root_host, "localhost", "127.0.0.1", "0.0.0.0"] do
         nil
       else
-        String.replace(host, ~r/.?#{root_host}/, "")
+        # Extract the subdomain by removing the root domain
+        host
+        |> String.split(".")
+        |> handle_subdomain_extraction(root_host)
       end
     end
+    
+    defp handle_subdomain_extraction([subdomain | _], root_host) when subdomain <> "." <> root_host != root_host, do: subdomain
+    defp handle_subdomain_extraction(_, _), do: nil
+
   end
 end
